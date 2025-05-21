@@ -1,0 +1,35 @@
+# Core dependencies
+streamlit>=1.32.0
+pandas>=2.2.0
+numpy>=1.26.0
+matplotlib>=3.10.1
+
+# PDF and Image Processing
+opencv-python>=4.9.0
+Pillow>=10.2.0
+
+# OCR and Text Processing
+pytesseract>=0.3.10
+python-docx>=1.1.0
+
+# Azure Services
+azure-core>=1.34.0
+azure-ai-formrecognizer>=3.3.3
+
+# AI and API
+openai>=1.12.0
+httpx>=0.27.0
+
+# Excel and SharePoint Integration
+openpyxl>=3.1.2
+xlrd>=2.0.1
+markitdown>=0.1.0
+requests>=2.31.0
+
+# Database and Storage
+pyodbc>=5.2.0
+
+# Utilities
+python-dotenv>=1.0.0
+tqdm>=4.66.0
+rich>= 14.0.0

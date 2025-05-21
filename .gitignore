@@ -1,0 +1,50 @@
+# Sensitive information
+.env
+output
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Streamlit
+.streamlit/
+
+# IDE-specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.vs
+.vs
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Temporary files 
+temp_page_*.jpg
+temp_excel.xlsx 
+processed_images
+assets/chart.png
