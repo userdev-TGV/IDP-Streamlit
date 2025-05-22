@@ -10,7 +10,7 @@ import io
 import requests
 import pandas as pd
 from rich.console import Console
-from openai import AzureOpenAI
+from openai import OpenAI, AzureOpenAI
 from dotenv import load_dotenv
 from datetime import datetime
 import streamlit as st
@@ -91,11 +91,12 @@ AZURE_KEY = os.getenv("AZURE_KEY")
 
 # OpenAI API key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID")
 
 # Azure OpenAI API key
 AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
-OPENAI_ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID")
+AZURE_OPENAI_ASSISTANT_ID = os.getenv("AZURE_OPENAI_ASSISTANT_ID")
 
 # LogicApps/PowerAutomate API URL for uploads to database
 UPLOAD_URL = os.getenv("UPLOAD_URL")
@@ -112,10 +113,15 @@ document_client = DocumentAnalysisClient(
 )
 
 # Initialize OpenAI client
-openai_client = AzureOpenAI(
-    api_key=AZURE_OPENAI_API_KEY,
-    api_version="2025-01-01-preview",
-    azure_endpoint=AZURE_OPENAI_ENDPOINT)
+if OPENAI_API_KEY:
+    openai_client = OpenAI(
+        api_key=OPENAI_API_KEY)
+else:
+    # Use Azure OpenAI if API key is not provided
+    openai_client = AzureOpenAI(
+        api_key=AZURE_OPENAI_API_KEY,
+        api_version="2025-01-01-preview",
+        azure_endpoint=AZURE_OPENAI_ENDPOINT)
 
 
 # System prompts for different languages
@@ -347,11 +353,7 @@ class LogUtil:
 class ChartUtil:
     def __init__(self):
         self.log = LogUtil()
-        self.client = AzureOpenAI(
-            api_key=AZURE_OPENAI_API_KEY,
-            api_version="2023-12-01-preview",
-            azure_endpoint=AZURE_OPENAI_ENDPOINT
-        )
+        self.client = openai_client
         self.chart_out_path = os.path.join("assets", "chart.png")
 
     def generate_chart(self, message):
@@ -364,27 +366,68 @@ class ChartUtil:
         )
 
         try:
-            response = self.client.chat.completions.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": "You are a helpful data analyst who only response with matplotlib code"},
-                    {"role": "user", "content": ci_prompt}
-                ]
-            )
+            if OPENAI_API_KEY:
+                st.info("Using OpenAI API for chart generation.")
+                thread = self.client.beta.threads.create(
+                    messages=[{"role": "user", "content": ci_prompt}]
+                )
 
-            code = response.choices[0].message.content
-            self.log.info(code)
+                run = self.client.beta.threads.runs.create(
+                    assistant_id=OPENAI_ASSISTANT_ID,
+                    thread_id=thread.id
+                )
 
-            local_vars = {}
-            exec(code, {"plt": plt}, local_vars)
+                while True:
+                    run = self.client.beta.threads.runs.retrieve(
+                        run_id=run.id, thread_id=thread.id
+                    )
 
-            fig = local_vars.get("fig")
-            if fig:
-                fig.savefig(self.chart_out_path)
-                return (self.chart_out_path, "Chart generated successfully.")
+                    if run.status == "completed":
+                        self.log.info("✅ Chart generation completed.")
+
+                        messages = self.client.beta.threads.messages.list(
+                            thread_id=thread.id)
+                        self.log.info(messages.data[0])
+
+                        image_file_id = messages.data[0].content[0].image_file.file_id
+                        content_description = messages.data[0].content[1].text.value
+
+                        raw_response = self.client.files.with_raw_response.content(
+                            file_id=image_file_id)
+                        self.client.files.delete(image_file_id)
+
+                        with open(self.chart_out_path, "wb") as f:
+                            f.write(raw_response.content)
+                            return (self.chart_out_path, content_description)
+
+                    elif run.status == "failed":
+                        self.log.error("❌ Chart generation failed.")
+                        break
+
+                    time.sleep(1)
             else:
-                self.log.error(
-                    "❌ No 'fig' object found in the generated code.")
+                st.info("Using Azure OpenAI API for chart generation.")
+                response = self.client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[
+                        {"role": "system", "content": "You are a helpful data analyst who only response with matplotlib code"},
+                        {"role": "user", "content": ci_prompt}
+                    ]
+                )
+
+                code = response.choices[0].message.content
+                self.log.info(code)
+
+                local_vars = {}
+                exec(code, {"plt": plt}, local_vars)
+
+                fig = local_vars.get("fig")
+                if fig:
+                    fig.savefig(self.chart_out_path)
+                    return (self.chart_out_path, "Chart generated successfully.")
+                else:
+                    self.log.error(
+                        "❌ No 'fig' object found in the generated code.")
         except Exception as e:
             self.log.error(
                 f"An unexpected error occurred during chart generation process: {e}")
