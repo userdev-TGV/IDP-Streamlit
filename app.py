@@ -1849,7 +1849,7 @@ def main():
 
     with tab6:
         st.markdown("""
-            ###Power BI Report
+            ### Power BI Report
             Power BI Report. You must be log in to Power BI to see the report.
             If you are not logged in, you will be redirected to the login page.
         """)
