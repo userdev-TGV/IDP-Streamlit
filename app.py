@@ -1118,7 +1118,7 @@ def chat_tab():
 
 
 def chat_with_database(data, question):
-    """Chat with the Excel database content using OpenAI."""
+    """Chat with the database content using OpenAI."""
     try:
         # Convert dataframe to a formatted string representation
         data_str = data.to_string(index=False)
@@ -1849,15 +1849,15 @@ def main():
 
     with tab6:
         st.markdown("""
-            ### Contracts Report
-            Report about the contracts. You must be log in to Power BI to see the report.
+            ###Power BI Report
+            Power BI Report. You must be log in to Power BI to see the report.
             If you are not logged in, you will be redirected to the login page.
         """)
-        powerbi_url = "https://app.powerbi.com/reportEmbed?reportId=efaa8284-4f0a-4a2e-8543-29a41d2934c2&autoAuth=true&ctid=fee2180b-69b6-4afe-9f14-ccd70bd4c737"
+        powerbi_url = "https://app.powerbi.com/view?r=eyJrIjoiZGZjMGEzOTUtOTUxZi00NDRiLWIyZTgtNDkzZjM4MDVkOGI0IiwidCI6IjBlNTczMTNlLTc3ZWUtNDlhYS05ZDc2LTdmOWZjOTEyMWE3YSJ9"
         st.markdown(
             f"""
             <iframe
-                title="Contracts"
+                title="Power BI Report"
                 width="100%"
                 height="800"
                 src="{powerbi_url}"
