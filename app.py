@@ -1386,12 +1386,11 @@ def main():
         "Extract, analyze, and chat with your contract documents in multiple languages")
 
     # Create tabs with icons
-    tab1, tab3, tab4, tab5, tab6 = st.tabs([
+    tab1, tab3, tab4, tab5= st.tabs([
         "📄 Standard Extraction",
         "💬 Chat with Contract",
         "🗃️ Chat with Contract Database",
-        "📊 Generate Charts",
-        "📈 Contracts Report"
+        "📊 Generate Charts"
     ])
 
     # Tab 1: Standard extraction
@@ -1888,27 +1887,6 @@ def main():
     # Tab 5: Generate charts
     with tab5:
         render_chart_tab()
-
-    with tab6:
-        st.markdown("""
-            ### Power BI Report
-            Power BI Report. You must be log in to Power BI to see the report.
-            If you are not logged in, you will be redirected to the login page.
-        """)
-        powerbi_url = "https://app.powerbi.com/view?r=eyJrIjoiZGZjMGEzOTUtOTUxZi00NDRiLWIyZTgtNDkzZjM4MDVkOGI0IiwidCI6IjBlNTczMTNlLTc3ZWUtNDlhYS05ZDc2LTdmOWZjOTEyMWE3YSJ9"
-        st.markdown(
-            f"""
-            <iframe
-                title="Power BI Report"
-                width="100%"
-                height="800"
-                src="{powerbi_url}"
-                frameborder="0"
-                allowFullScreen="true">
-            </iframe>
-            """,
-            unsafe_allow_html=True
-        )
 
 
 if __name__ == "__main__":
