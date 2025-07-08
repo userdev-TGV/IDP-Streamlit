@@ -34,49 +34,124 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Add custom CSS for modern UI
+# Add custom CSS for modern UI (Spanish, Roboto, new colors)
 st.markdown("""
     <style>
+    @import url('https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap');
+    html, body, [class*="st-"] {
+        font-family: 'Roboto', sans-serif !important;
+    }
     .main {
-        padding: 2rem;
+        background-color: #f7f7f7;
+    }
+    .stAppToolbar {visibility: hidden;}
+    .stMainBlockContainer {
+        padding: 1em    ;
     }
     .stButton>button {
         width: 100%;
-        border-radius: 5px;
+        border-radius: 6px;
         height: 3em;
         margin-top: 1em;
+        background-color: #e30613;
+        color: #fff;
+        font-weight: bold;
+        border: none;
+        transition: background 0.2s;
+    }
+    .stButton>button:hover {
+        background-color: #34374b;
+        color: #fff;
     }
     .stTabs [data-baseweb="tab-list"] {
         gap: 2rem;
+        background: #34374b;
+        border-radius: 8px 8px 0 0;
+        padding: 0.5rem 0.5rem 0 0.5rem;
     }
     .stTabs [data-baseweb="tab"] {
         height: 50px;
         white-space: pre-wrap;
+        color: #fff;
+        font-weight: 500;
+        font-size: 1.1rem;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #FF4B4B;
-        color: white;
-        border-radius: 5px;
+        background-color: #e30613;
+        color: #fff;
+        border-radius: 8px 8px 0 0;
     }
-    .stMarkdown {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    .stMarkdown, .stMetric, .stExpander, .uploadedFile {
+        font-family: 'Roboto', sans-serif;
     }
     .stMetric {
         background-color: #f0f2f6;
         padding: 1rem;
-        border-radius: 5px;
+        border-radius: 8px;
         margin: 0.5rem 0;
+        border-left: 6px solid #e30613;
     }
     .stExpander {
         background-color: #f0f2f6;
-        border-radius: 5px;
+        border-radius: 8px;
         margin: 0.5rem 0;
+        border-left: 6px solid #34374b;
     }
     .uploadedFile {
-        background-color: #f0f2f6;
+        background-color: #fff;
         padding: 1rem;
-        border-radius: 5px;
+        border-radius: 8px;
         margin: 0.5rem 0;
+        border-left: 6px solid #4a4a49;
+        box-shadow: 0 2px 8px rgba(52,55,75,0.05);
+    }
+    .stDownloadButton>button {
+        background-color: #4a4a49;
+        color: #fff;
+        border-radius: 6px;
+        font-weight: bold;
+        border: none;
+        margin-top: 0.5em;
+    }
+    .stDownloadButton>button:hover {
+        background-color: #e30613;
+        color: #fff;
+    }
+    .stAlert, .stInfo, .stWarning, .stError {
+        border-radius: 8px;
+        font-family: 'Roboto', sans-serif;
+    }
+    .stTextInput>div>input, .stTextArea>div>textarea {
+        border-radius: 6px;
+        border: 1.5px solid #34374b;
+        font-family: 'Roboto', sans-serif;
+    }
+    .stRadio>div>label {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 500;
+    }
+    .stSelectbox>div>div>div>div {
+        font-family: 'Roboto', sans-serif;
+    }
+    .stFileUploader>div>div {
+        border: 2px dashed #e30613;
+        border-radius: 8px;
+        background: #fff;
+    }
+    .stFileUploader>div>div:hover {
+        border: 2px solid #34374b;
+    }
+    .stProgress>div>div>div {
+        background: linear-gradient(90deg, #e30613 0%, #34374b 100%);
+    }
+    .stChatMessage {
+        background: #f0f2f6;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        font-family: 'Roboto', sans-serif;
+    }
+    .stContainer {
+        font-family: 'Roboto', sans-serif;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -469,31 +544,31 @@ class ChartUI:
 
     def generate_and_render(self, user_input: str):
         if not user_input.strip():
-            st.warning("⚠️ Please enter some data or description.")
+            st.warning("⚠️ Por favor, ingresa algunos datos o una descripción.")
             return
 
-        with st.spinner("⏳ Generating chart..."):
+        with st.spinner("⏳ Generando gráfica..."):
             image_path, description = self.chart_util.generate_chart(
                 user_input)
 
         with st.container(border=True):
             if image_path:
-                st.image(image_path, caption="📈 Generated Chart",
+                st.image(image_path, caption="📈 Gráfica Generada",
                          use_container_width=True)
             else:
-                st.error("❌ Failed to generate the chart. Please try again.")
+                st.error("❌ No se pudo generar la gráfica. Por favor, intenta de nuevo.")
 
 
 # ----------------- STREAMLIT TAB RENDER FUNCTION ----------------- #
 def render_chart_tab():
-    st.markdown("## 📊 Chart Generator")
+    st.markdown("## 📊 Generador de Gráficas")
     st.markdown(
-        "Use this tool to **generate charts** from structured data or plain-text descriptions using AI.")
+        "Utiliza esta herramienta para **generar gráficas** a partir de datos estructurados o descripciones en texto libre usando IA.")
 
     input_text = st.text_area(
-        "✏️ Input your data or description below", height=100)
+        "✏️ Ingresa tus datos o una descripción de la gráfica que deseas", height=100)
 
-    if st.button("📊 Generate Chart", key=1):
+    if st.button("📊 Generar Gráfica", key=1):
         chart_ui = ChartUI()
         chart_ui.generate_and_render(input_text)
 
@@ -1004,114 +1079,113 @@ def create_modern_results_display(openai_results, metrics, extracted_text):
 
 
 def show_chat_interface(extracted_text):
-    """Display the chat interface with the given extracted text."""
-    st.subheader("Ask Questions About Your Contract")
+    """Muestra la interfaz de chat con el texto extraído."""
+    st.subheader("Haz preguntas sobre tu contrato")
 
-    # Initialize chat history if not exists
+    # Inicializa el historial de chat si no existe
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
 
-    # Display chat history
+    # Muestra el historial de chat
     for message in st.session_state.chat_history:
         with st.chat_message(message["role"]):
             st.write(message["content"])
 
-    # Chat input
-    user_question = st.chat_input("Ask a question about your contract")
+    # Entrada de chat
+    user_question = st.chat_input("Escribe una pregunta sobre tu contrato")
 
     if user_question:
-        # Add user message to chat history
+        # Agrega el mensaje del usuario al historial
         st.session_state.chat_history.append({
             "role": "user",
             "content": user_question
         })
 
-        # Display user message
+        # Muestra el mensaje del usuario
         with st.chat_message("user"):
             st.write(user_question)
 
-        # Get AI response
-        with st.spinner("Thinking..."):
+        # Obtiene la respuesta de la IA
+        with st.spinner("Pensando..."):
             ai_response = chat_with_document(extracted_text, user_question)
 
-        # Add AI response to chat history
+        # Agrega la respuesta de la IA al historial
         st.session_state.chat_history.append({
             "role": "assistant",
             "content": ai_response
         })
 
-        # Display AI response
+        # Muestra la respuesta de la IA
         with st.chat_message("assistant"):
             st.write(ai_response)
 
-        # Add a button to clear chat history
-        if st.button("Clear Chat History"):
+        # Botón para limpiar historial
+        if st.button("🧹 Limpiar historial de chat"):
             st.session_state.chat_history = []
             st.rerun()
 
 
 def chat_tab():
-    """Interface for chatting with contract document."""
+    """Interfaz para chatear con el documento de contrato."""
     st.markdown("""
-    This tab allows you to ask questions about the contract document you've uploaded.
-    You can use a previously processed document or upload a new one. The system can analyze contracts in multiple languages.
+    En esta pestaña puedes hacer preguntas sobre el contrato que has subido.
+    Puedes usar un documento previamente procesado o subir uno nuevo. El sistema puede analizar contratos en varios idiomas.
     """)
 
-    # Create placeholders for this tab
+    # Placeholders para la interfaz
     modal_placeholder = st.empty()
     chat_placeholder = st.empty()
 
-    # Check if we have previous extraction results
+    # Verifica si hay resultados previos
     has_previous_extraction = (
         'extracted_text' in st.session_state and
         st.session_state.extracted_text is not None
     )
 
-    # Add radio button for document selection
+    # Botón de selección de documento
     if has_previous_extraction:
         document_source = st.radio(
-            "📄 Choose document source:",
-            ["Use Previously Processed Document", "Upload New Document"],
+            "📄 Selecciona el origen del documento:",
+            ["Usar documento previamente procesado", "Subir nuevo documento"],
             horizontal=True
         )
     else:
-        document_source = "Upload New Document"
+        document_source = "Subir nuevo documento"
 
-    if document_source == "Use Previously Processed Document":
-        st.success("Using previously processed document for chat")
+    if document_source == "Usar documento previamente procesado":
+        st.success("Usando documento previamente procesado para el chat")
         show_chat_interface(st.session_state.extracted_text)
     else:
-        # File upload for chat
+        # Subida de archivo para chat
         uploaded_file = st.file_uploader(
-            "📁 Choose a contract document",
+            "📁 Selecciona un documento de contrato",
             type=["pdf", "png", "jpg", "jpeg"],
             key="chat_file_uploader"
         )
 
         if uploaded_file is not None:
-            # Display file information
+            # Muestra información del archivo
             file_type = uploaded_file.type
-            file_name = os.path.splitext(uploaded_file.name)[
-                0]  # Get filename without extension
-            st.info(f"Uploaded file: {uploaded_file.name} ({file_type})")
+            file_name = os.path.splitext(uploaded_file.name)[0]
+            st.info(f"Archivo subido: {uploaded_file.name} ({file_type})")
 
-            if st.button("🚀 Process for Chat", use_container_width=True):
+            if st.button("🚀 Procesar para chat", use_container_width=True):
                 try:
-                    # Show processing modal
+                    # Muestra modal de procesamiento
                     logo_html = add_banner("assets/icon.png")
                     modal_html = create_modal(logo_html)
                     modal_placeholder.markdown(
                         modal_html, unsafe_allow_html=True)
                     extracted_text = []
 
-                    # Process the document
-                    with st.spinner("Processing document for chat..."):
+                    # Procesa el documento
+                    with st.spinner("Procesando documento para chat..."):
                         file_bytes = uploaded_file.getvalue()
 
                         if file_type == "application/pdf":
                             status_text = st.empty()
                             status_text.text(
-                                "Processing PDF with Azure Form Recognizer...")
+                                "Procesando PDF con Azure Form Recognizer...")
                             poller = document_client.begin_analyze_document(
                                 model_id="prebuilt-read", document=file_bytes)
                             result = poller.result()
@@ -1124,13 +1198,11 @@ def chat_tab():
                                         'page': page_num
                                     })
                         else:
-                            # Use Azure Form Recognizer on the image
+                            # Usa Azure Form Recognizer en la imagen
                             poller = document_client.begin_analyze_document(
                                 model_id="prebuilt-read", document=file_bytes)
                             result = poller.result()
 
-                            # Extract text from this page
-                            page_text = []
                             for page in result.pages:
                                 for line in page.lines:
                                     extracted_text.append({
@@ -1139,24 +1211,24 @@ def chat_tab():
                                         'page': 1
                                     })
 
-                        # Store in session state
+                        # Guarda en session state
                         st.session_state.extracted_text = extracted_text
 
-                        # Clear chat history for a new document
+                        # Limpia historial de chat para nuevo documento
                         if 'chat_history' in st.session_state:
                             st.session_state.chat_history = []
 
-                        # Clear the modal
+                        # Limpia el modal
                         modal_placeholder.empty()
 
-                        # Show success message and chat interface
+                        # Mensaje de éxito y muestra interfaz de chat
                         st.success(
-                            "Document processed! You can now chat with it.")
+                            "¡Documento procesado! Ahora puedes chatear con él.")
                         show_chat_interface(extracted_text)
 
                 except Exception as e:
                     modal_placeholder.empty()
-                    st.error(f"Error processing document: {str(e)}")
+                    st.error(f"Error procesando el documento: {str(e)}")
 
 
 def chat_with_database(data, question):
@@ -1188,44 +1260,44 @@ def chat_with_database(data, question):
 
 
 def show_database_chat_interface(data):
-    """Display the chat interface for database with the given data."""
-    st.subheader("Ask Questions About Your Contract Database")
+    """Muestra la interfaz de chat para la base de datos con los datos dados."""
+    st.subheader("Haz preguntas sobre tu base de datos de contratos")
 
-    # Initialize chat history if not exists
+    # Inicializa historial si no existe
     if 'db_chat_history' not in st.session_state:
         st.session_state.db_chat_history = []
 
-    # Display chat history
+    # Muestra historial
     for message in st.session_state.db_chat_history:
         with st.chat_message(message["role"]):
             st.write(message["content"])
 
-    # Chat input
+    # Entrada de chat
     user_question = st.chat_input(
-        "Ask a question about your contract database")
+        "Escribe una pregunta sobre tu base de datos de contratos")
 
     if user_question:
-        # Add user message to chat history
+        # Agrega mensaje del usuario
         st.session_state.db_chat_history.append({
             "role": "user",
             "content": user_question
         })
 
-        # Display user message
+        # Muestra mensaje del usuario
         with st.chat_message("user"):
             st.write(user_question)
 
-        # Get AI response
-        with st.spinner("Thinking..."):
+        # Obtiene respuesta de la IA
+        with st.spinner("Pensando..."):
             ai_response = chat_with_database(data, user_question)
 
-        # Add AI response to chat history
+        # Agrega respuesta de la IA
         st.session_state.db_chat_history.append({
             "role": "assistant",
             "content": ai_response
         })
 
-        # Display AI response
+        # Muestra respuesta de la IA
         with st.chat_message("assistant"):
             st.write(ai_response)
 
@@ -1298,45 +1370,44 @@ def load_sql_database(query="SELECT * FROM Contracts"):
 
 
 def chat_database_tab():
-    """Interface for chatting with contract database from Azure SQL."""
+    """Interfaz para chatear con la base de datos de contratos en Azure SQL."""
     st.markdown("""
-    This tab allows you to chat with a contract database stored in Azure SQL.
+    En esta pestaña puedes chatear con una base de datos de contratos almacenada en Azure SQL.
     """)
-    # Show chat if data is already loaded
+    # Muestra chat si los datos ya están cargados
     if st.session_state.get("database_loaded", False):
         show_database_chat_interface(st.session_state["excel_data"])
-        if st.button("📊 Generate Chart", key=2):
+        if st.button("📊 Generar Gráfica", key=2):
             text = st.session_state["db_chat_history"][-1]
             chart_ui = ChartUI()
             chart_ui.generate_and_render(text.get("content", ""))
-        if st.button("🔄 Reset and Load Another Database"):
+        if st.button("🔄 Reiniciar y cargar otra base de datos"):
             st.session_state.pop("excel_data", None)
             st.session_state.pop("db_chat_history", None)
             st.session_state["database_loaded"] = False
             st.rerun()
-        if st.button("🧹 Clear Chat History"):
+        if st.button("🧹 Limpiar historial de chat"):
             st.session_state.db_chat_history = []
             st.rerun()
         return
 
-    # SQL query input (optional, or use default)
+    # Entrada de consulta SQL (opcional, o usa la predeterminada)
     query = st.text_area(
-        "SQL Query to load contract data:",
+        "Consulta SQL para cargar datos de contratos:",
         value="SELECT * FROM Contracts",
-        help="Edit the SQL query if you want to filter or join tables."
-    )
-    if st.button("🔗 Load Database from Azure SQL", type="primary", use_container_width=True):
-        with st.spinner("Loading data from Azure SQL..."):
+        help="Edita la consulta SQL si deseas filtrar o unir tablas.")
+    if st.button("🔗 Cargar base de datos desde Azure SQL", type="primary", use_container_width=True):
+        with st.spinner("Cargando datos desde Azure SQL..."):
             df = load_sql_database(query)
             if df is not None and not df.empty:
                 st.session_state.excel_data = df
                 st.session_state.database_loaded = True
-                st.success(f"Loaded {len(df)} records from Azure SQL.")
-                st.subheader("Database Preview")
+                st.success(f"Se cargaron {len(df)} registros desde Azure SQL.")
+                st.subheader("Vista previa de la base de datos")
                 st.dataframe(df.head(5))
                 show_database_chat_interface(df)
             else:
-                st.error("No data loaded from Azure SQL.")
+                st.error("No se cargaron datos desde Azure SQL.")
 
 
 def upload_to_database(data):
@@ -1355,67 +1426,63 @@ def upload_to_database(data):
 
 def main():
     """Main function to run the Streamlit app."""
-    # Create sidebar
-    with st.sidebar:
-        # Add logo
-        try:
-            st.image("logo.png", width=200)
-        except:
-            st.title("Contract Analysis Pro")
-
-        # Add vertical space
-        st.markdown("<br>" * 2, unsafe_allow_html=True)
-
-        # Information section
-        st.markdown("### About")
-        st.markdown("""
-        This application helps you extract and analyze information from contracts in multiple languages.
-        Upload your documents and get instant insights!
-        
-        **Features**:
-        - Extract key contract information in multiple languages (English, Spanish, Russian, Portuguese)
-        - Process multiple files at once
-        - Chat with your contract documents
-        - Chat with contract database from SharePoint
-        - Custom extraction templates
-        """)
-
-    # Create header
-    st.title("Multilingual Contract Data Extraction")
-    st.markdown(
-        "Extract, analyze, and chat with your contract documents in multiple languages")
+    # Header empresarial
+    st.markdown("""
+            <div style='display: flex; align-items: center; gap: 2rem; background: #34374b; padding: 1.5rem 2rem; border-radius: 0 0 16px 16px; box-shadow: 0 2px 8px rgba(52,55,75,0.08); margin-bottom: 2rem;'>
+            <img src='https://tgv.com.ar/wp-content/uploads/2024/04/Logo-300x115.webp' width='80' style='border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);'>
+            <div>
+                <h1 style='color: #fff; font-size: 2.2rem; margin-bottom: 0.2rem; font-family: Roboto, sans-serif;'>Extracción y Análisis de Contratos Multilingüe</h1>
+                <p style='color: #e30613; font-size: 1.1rem; margin: 0; font-family: Roboto, sans-serif;'>Extrae, analiza y consulta tus contratos en una interfaz moderna, intuitiva y empresarial.</p>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
     # Create tabs with icons
-    tab1, tab3, tab4, tab5= st.tabs([
-        "📄 Standard Extraction",
-        "💬 Chat with Contract",
-        "🗃️ Chat with Contract Database",
-        "📊 Generate Charts"
+    tab0, tab1, tab3, tab4, tab5= st.tabs([
+        "🏠 Descripción de la herramienta",
+        "📑 Extracción Estándar",
+        "💬 Chat con Contrato",
+        "🗄️ Chat con Base de Datos",
+        "📊 Generar Gráficas"
     ])
 
+    with tab0:
+        # Beneficios y descripción (antes en sidebar)
+        st.markdown("""
+        <div style='background: #f7f7f7; border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(52,55,75,0.04);'>
+            <h3 style='color: #34374b; margin-top: 0; font-family: Roboto, sans-serif;'>¿Qué puedes hacer con esta herramienta?</h3>
+            <ul style='color: #4a4a49; font-size: 1.08rem; line-height: 1.7; font-family: Roboto, sans-serif;'>
+                <li>Extrae información clave de contratos en varios idiomas (inglés, español, ruso, portugués)</li>
+                <li>Procesa múltiples archivos a la vez</li>
+                <li>Chatea con tus documentos de contrato</li>
+                <li>Chatea con la base de datos de contratos</li>
+                <li>Plantillas de extracción personalizadas</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
     # Tab 1: Standard extraction
     with tab1:
         st.markdown("""
-            ### Standard Contract Information Extraction
-            Upload your contracts to extract key information automatically in multiple languages.
+            ### Extracción Estándar de Información de Contratos
+            Sube tus contratos para extraer automáticamente información clave en el idioma que elijas.
             
-            You can upload multiple files and process them all at once.
+            Puedes cargar varios archivos y procesarlos todos al mismo tiempo.
         """)
 
         # Add language selector
         selected_language = st.selectbox(
-            "🌐 Select language for extraction:",
+            "🌐 Selecciona el idioma para la extracción:",
             options=list(SYSTEM_PROMPTS.keys()),
-            index=0  # Default to English
+            index=0  # Por defecto Inglés
         )
 
         # Brief explanation of language selection
         st.info(
-            f"Selected language: {selected_language}. The extraction system will use prompts and respond in this language.")
+            f"Idioma seleccionado: {selected_language}. El sistema de extracción usará prompts y responderá en este idioma.")
 
         # File uploader with modern styling
         uploaded_files = st.file_uploader(
-            "📁 Drag and drop your files here",
+            "📁 Arrastra y suelta tus archivos aquí o haz clic para seleccionarlos",
             type=["pdf", "png", "jpg", "jpeg"],
             accept_multiple_files=True,
             key="standard_file_uploader"
@@ -1427,23 +1494,23 @@ def main():
             for i, file in enumerate(uploaded_files):
                 with cols[i % 2]:
                     st.markdown(f"""
-                        <div class="uploadedFile">
+                        <div class=\"uploadedFile\">
                             <p><strong>{file.name}</strong></p>
-                            <p>Size: {file.size / 1024:.1f} KB</p>
-                            <p>Type: {file.type}</p>
+                            <p>Tamaño: {file.size / 1024:.1f} KB</p>
+                            <p>Tipo: {file.type}</p>
                         </div>
                     """, unsafe_allow_html=True)
 
-            if st.button("🚀 Process All Documents", use_container_width=True):
+            if st.button("🚀 Procesar todos los documentos", use_container_width=True):
                 # Initialize list to store all results
                 all_results = []
 
                 # Process files and show results
-                with st.spinner("Processing all documents..."):
+                with st.spinner("Procesando todos los documentos..."):
                     for file_index, file in enumerate(uploaded_files):
                         try:
                             st.markdown(
-                                f"### Processing file {file_index + 1}/{len(uploaded_files)}: {file.name}")
+                                f"### Procesando archivo {file_index + 1}/{len(uploaded_files)}: {file.name}")
                             progress_bar = st.progress(0)
 
                             file_bytes = file.getvalue()
@@ -1503,21 +1570,21 @@ def main():
                                 upload_to_database(openai_results)
 
                                 # Create an expander for each file's results
-                                with st.expander(f"Results for {file.name}", expanded=False):
+                                with st.expander(f"Resultados para {file.name}", expanded=False):
                                     # Display results
                                     # Instead of calling display_extraction_results which uses expanders,
                                     # we'll show the results directly to avoid nested expanders
                                     st.subheader(
-                                        "Extracted Contract Information")
+                                        "Información extraída del contrato")
 
                                     # Show page info if multi-page document
                                     if metrics.get("page_count", 1) > 1:
                                         st.info(
-                                            f"Processed {metrics['page_count']} pages")
+                                            f"Se procesaron {metrics['page_count']} páginas")
 
                                         # Display thumbnails of processed images if available
                                         if metrics.get("saved_images"):
-                                            st.subheader("Processed Pages")
+                                            st.subheader("Páginas procesadas")
                                             image_cols = st.columns(
                                                 min(4, len(metrics["saved_images"])))
                                             for i, image_path in enumerate(metrics["saved_images"]):
@@ -1534,38 +1601,36 @@ def main():
                                         "contracts", [])
                                     for idx, contract in enumerate(contracts):
                                         st.markdown(
-                                            f"### 📄 Contract Payment Type {idx + 1}")
+                                            f"### 📄 Tipo de pago del contrato {idx + 1}")
 
                                         col1, col2 = st.columns(2)
                                         simple_fields = [
-                                            ("Contract", "Contract"),
-                                            ("Contract Number", "Contract Number"),
-                                            ("Contract Type", "Contract Type"),
-                                            ("Customer", "Customer"),
-                                            ("Region", "Region"),
-                                            ("Effective Date", "Effective Date"),
-                                            ("Expiration Date", "Expiration Date"),
-                                            ("Contract Terms", "Contract Terms"),
-                                            ("Payment Type", "Payment Type"),
-                                            ("Payment Value", "Payment Value"),
-                                            ("Currency", "Currency")
+                                            ("Contract", "Contrato"),
+                                            ("Contract Number", "Número de contrato"),
+                                            ("Contract Type", "Tipo de contrato"),
+                                            ("Customer", "Cliente"),
+                                            ("Region", "Región"),
+                                            ("Effective Date", "Fecha de vigencia"),
+                                            ("Expiration Date", "Fecha de expiración"),
+                                            ("Contract Terms", "Términos del contrato"),
+                                            ("Payment Type", "Tipo de pago"),
+                                            ("Payment Value", "Valor del pago"),
+                                            ("Currency", "Moneda")
                                         ]
 
                                         for i, (key, label) in enumerate(simple_fields):
                                             col = col1 if i % 2 == 0 else col2
                                             value = contract.get(
-                                                key, "Not found")
+                                                key, "No encontrado")
                                             col.markdown(
                                                 f"**{label}:** {value}")
 
                                         # List-based fields
                                         list_fields = [
-                                            ("Promo Tactic", "Promo Tactic(s)"),
-                                            ("Product Category",
-                                             "Product Category(ies)"),
-                                            ("Incentives Details",
-                                             "Incentives Details"),
-                                            ("Legal Aspects", "Legal Aspects")
+                                            ("Promo Tactic", "Táctica promocional(es)"),
+                                            ("Product Category", "Categoría(s) de producto"),
+                                            ("Incentives Details", "Detalles de incentivos"),
+                                            ("Legal Aspects", "Aspectos legales")
                                         ]
                                         for key, label in list_fields:
                                             items = contract.get(key, [])
@@ -1575,23 +1640,21 @@ def main():
                                                     st.markdown(f"- {item}")
                                             else:
                                                 st.markdown(
-                                                    f"**{label}:** Not found")
+                                                    f"**{label}:** No encontrado")
 
                                         # Multi-line text fields
                                         long_fields = [
-                                            ("Promotion Display",
-                                             "Promotion Display"),
-                                            ("Payment Structure",
-                                             "Payment Structure"),
-                                            ("Penalties", "Penalties")
+                                            ("Promotion Display", "Visualización de la promoción"),
+                                            ("Payment Structure", "Estructura de pago"),
+                                            ("Penalties", "Penalizaciones")
                                         ]
                                         for key, label in long_fields:
                                             st.markdown(
-                                                f"**{label}:** {contract.get(key, 'Not found')}")
+                                                f"**{label}:** {contract.get(key, 'No encontrado')}")
 
                                     # Show tabs for additional information
-                                    tab1, tab2, tab3 = st.tabs(
-                                        ["Raw JSON", "OCR Text", "Processing Metrics"])
+                                    tab1, tab2, tab3 = st.tabs([
+                                        "🗂️ JSON Extraído", "📝 Texto OCR", "📊 Métricas de Procesamiento"])
 
                                     with tab1:
                                         st.json(openai_results)
@@ -1617,43 +1680,8 @@ def main():
                                             st.json(extracted_text)
 
                                     with tab3:
-                                        # Remove image paths from display
-                                        display_metrics = {
-                                            k: v for k, v in metrics.items() if k != "saved_images"}
-                                        st.json(display_metrics)
-
-                                    # Add download buttons for this specific file
-                                    col1, col2 = st.columns(2)
-                                    with col1:
-                                        json_str = json.dumps(
-                                            openai_results, indent=2)
-                                        st.download_button(
-                                            label="📥 Download JSON",
-                                            data=json_str,
-                                            file_name=f"{file_name}_results.json",
-                                            mime="application/json",
-                                            use_container_width=True
-                                        )
-                                    with col2:
-                                        # Create a CSV for this single file
-                                        csv_data = []
-                                        for field, data in openai_results.items():
-                                            if isinstance(data, dict) and "value" in data and "confidence" in data:
-                                                csv_data.append({
-                                                    "File": file.name,
-                                                    "Field": field,
-                                                    "Value": data["value"],
-                                                    "Confidence": data["confidence"]
-                                                })
-                                        df = pd.DataFrame(csv_data)
-                                        csv_string = df.to_csv(index=False)
-                                        st.download_button(
-                                            label="📥 Download CSV",
-                                            data=csv_string,
-                                            file_name=f"{file_name}_results.csv",
-                                            mime="text/csv",
-                                            use_container_width=True
-                                        )
+                                        st.markdown("**Métricas del procesamiento:**")
+                                        st.write(metrics)
 
                             else:
                                 st.error(
@@ -1663,12 +1691,13 @@ def main():
 
                 # If we have processed multiple files, show a summary and bulk download options
                 if len(all_results) > 1:
-                    st.markdown("### Batch Processing Summary")
+                    st.markdown("### Resumen de Procesamiento por Lote")
                     st.success(
-                        f"Successfully processed {len(all_results)} of {len(uploaded_files)} document(s)!")
+                        f"Se han procesado exitosamente {len(all_results)} de {len(uploaded_files)} documento(s)!"
+                    )
 
                     # Add bulk download options
-                    st.markdown("### Download All Results")
+                    st.markdown("### Descargar Todos los Resultados")
                     col1, col2 = st.columns(2)
 
                     with col1:
@@ -1686,7 +1715,7 @@ def main():
                         }
                         json_str = json.dumps(combined_json, indent=2)
                         st.download_button(
-                            label="📥 Download All Results (JSON)",
+                            label="📥 Descargar Todos los Resultados (JSON)",
                             data=json_str,
                             file_name="batch_results.json",
                             mime="application/json",
@@ -1698,7 +1727,7 @@ def main():
                         csv_string, csv_filename = create_csv_download_button(
                             all_results, "batch_results.csv")
                         st.download_button(
-                            label="📥 Download All Results (CSV)",
+                            label="📥 Descargar Todos los Resultados (CSV)",
                             data=csv_string,
                             file_name=csv_filename,
                             mime="text/csv",
@@ -1706,12 +1735,12 @@ def main():
                         )
 
                 elif len(all_results) == 1:
-                    st.success(f"Successfully processed the document!")
+                    st.success(f"Se ha procesado exitosamente el documento!")
 
                 # Add comparative analysis option if multiple documents
                 if len(all_results) > 1:
-                    st.markdown("### Comparative Analysis")
-                    with st.expander("View Field Comparison Across Documents"):
+                    st.markdown("### Análisis Comparativo")
+                    with st.expander("Comparar Campos en Documentos"):
                         # Create a comparison dataframe
                         comparison_data = []
                         for result in all_results:
@@ -1742,151 +1771,22 @@ def main():
     # Tab3: Chat with Contract
     with tab3:
         st.markdown("""
-            ### Chat with Your Contract
-            Ask questions about your contract and get instant answers.
+            ### 💬 Chat con Contrato
+            Haz preguntas en lenguaje natural sobre el contenido del contrato procesado y recibe respuestas inteligentes.
         """)
-
-        if 'extracted_text' in st.session_state:
-            document_source = st.radio(
-                "📄 Choose document source:",
-                ["Use Previously Processed Document", "Upload New Document"],
-                horizontal=True
-            )
-
-            if document_source == "Use Previously Processed Document":
-                show_chat_interface(st.session_state.extracted_text)
-            else:
-                uploaded_file = st.file_uploader(
-                    "📁 Choose a contract document",
-                    type=["pdf", "png", "jpg", "jpeg"],
-                    key="chat_file_uploader"
-                )
-
-                if uploaded_file and st.button("🚀 Process for Chat", use_container_width=True):
-                    try:
-                        with st.spinner("Processing document for chat..."):
-                            file_bytes = uploaded_file.getvalue()
-                            file_type = uploaded_file.type
-                            file_name = os.path.splitext(uploaded_file.name)[0]
-
-                            extracted_text = []
-
-                            if file_type == "application/pdf":
-                                status_text = st.empty()
-                                status_text.text(
-                                    "Processing PDF with Azure Form Recognizer...")
-                                poller = document_client.begin_analyze_document(
-                                    model_id="prebuilt-read", document=file_bytes)
-                                result = poller.result()
-
-                                for page_num, page in enumerate(result.pages, start=1):
-                                    for line in page.lines:
-                                        extracted_text.append({
-                                            'text': line.content,
-                                            'confidence': 0.98,
-                                            'page': page_num
-                                        })
-                            else:
-                                # Use Azure Form Recognizer on the image
-                                poller = document_client.begin_analyze_document(
-                                    model_id="prebuilt-read", document=file_bytes)
-                                result = poller.result()
-
-                                # Extract text from this page
-                                page_text = []
-                                for page in result.pages:
-                                    for line in page.lines:
-                                        extracted_text.append({
-                                            'text': line.content,
-                                            'confidence': 0.98,
-                                            'page': 1
-                                        })
-
-                            # Store in session state
-                            st.session_state.extracted_text = extracted_text
-
-                            # Clear chat history for a new document
-                            if 'chat_history' in st.session_state:
-                                st.session_state.chat_history = []
-
-                            # Show success message and chat interface
-                            st.success(
-                                "Document processed! You can now chat with it.")
-                            show_chat_interface(extracted_text)
-
-                    except Exception as e:
-                        st.error(f"Error processing document: {str(e)}")
-        else:
-            uploaded_file = st.file_uploader(
-                "📁 Choose a contract document",
-                type=["pdf", "png", "jpg", "jpeg"],
-                key="chat_file_uploader"
-            )
-
-            if uploaded_file and st.button("🚀 Process for Chat", use_container_width=True):
-                try:
-                    with st.spinner("Processing document for chat..."):
-                        file_bytes = uploaded_file.getvalue()
-                        file_type = uploaded_file.type
-                        file_name = os.path.splitext(uploaded_file.name)[0]
-                        extracted_text = []
-
-                        # Process the document and extract text
-                        if file_type == "application/pdf":
-                            status_text = st.empty()
-                            status_text.text(
-                                "Processing PDF with Azure Form Recognizer...")
-                            poller = document_client.begin_analyze_document(
-                                model_id="prebuilt-read", document=file_bytes)
-                            result = poller.result()
-
-                            for page_num, page in enumerate(result.pages, start=1):
-                                for line in page.lines:
-                                    extracted_text.append({
-                                        'text': line.content,
-                                        'confidence': 0.98,
-                                        'page': page_num
-                                    })
-                        else:
-                            # Use Azure Form Recognizer on the image
-                            poller = document_client.begin_analyze_document(
-                                model_id="prebuilt-read", document=file_bytes)
-                            result = poller.result()
-
-                            for page in result.pages:
-                                for line in page.lines:
-                                    extracted_text.append({
-                                        'text': line.content,
-                                        'confidence': 0.98,
-                                        'page': 1
-                                    })
-
-                        # Store in session state
-                        st.session_state.extracted_text = extracted_text
-
-                        # Clear chat history for a new document
-                        if 'chat_history' in st.session_state:
-                            st.session_state.chat_history = []
-
-                        # Show success message and chat interface
-                        st.success(
-                            "Document processed! You can now chat with it.")
-                        show_chat_interface(extracted_text)
-
-                except Exception as e:
-                    st.error(f"Error processing document: {str(e)}")
+        chat_tab()  # Asume que la función ya maneja la lógica, solo traducimos la interfaz
 
     # Tab 4: Chat with database
     with tab4:
         st.markdown("""
-            ### Chat with Contract Database
-            Connect to the Azure SQL database and chat with your contract data.
+            ### 🗄️ Chat con Base de Datos de Contratos
+            Conéctate a la base de datos de contratos y realiza preguntas inteligentes sobre tus datos almacenados.
         """)
-        chat_database_tab()
+        chat_database_tab()  # Asume que la función ya maneja la lógica, solo traducimos la interfaz
 
     # Tab 5: Generate charts
     with tab5:
-        render_chart_tab()
+        render_chart_tab()  # Asume que la función ya maneja la lógica, solo traducimos la interfaz
 
 
 if __name__ == "__main__":
