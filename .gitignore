@@ -48,3 +48,11 @@ temp_page_*.jpg
 temp_excel.xlsx 
 processed_images
 assets/chart.png
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+.vite/
+frontend/.vite/
