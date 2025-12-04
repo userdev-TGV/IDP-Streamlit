@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { ProcessedDocument, Metrics } from '../types'
+import { warmupDatabases } from '../api/contracts'
 
 interface SessionState {
   extractedText: ProcessedDocument['extracted_text']
@@ -15,6 +16,11 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [extractedText, setExtractedText] = useState<ProcessedDocument['extracted_text']>([])
   const [openaiResponse, setOpenaiResponse] = useState<ProcessedDocument['openai_response'] | null>(null)
   const [metrics, setMetrics] = useState<Metrics | null>(null)
+
+  // Despertar las bases de datos cuando se inicia la app
+  useEffect(() => {
+    warmupDatabases()
+  }, [])
 
   const setSession = (payload: Partial<Omit<SessionState, 'setSession' | 'reset'>>) => {
     if (payload.extractedText !== undefined) setExtractedText(payload.extractedText)

@@ -10,6 +10,13 @@ export interface Metrics {
   total_text_lines: number
   page_count: number
   saved_images?: string[]
+  openai_usage?: {
+    prompt_tokens?: number | null
+    completion_tokens?: number | null
+    total_tokens?: number | null
+  }
+  openai_tokens?: number
+  tokens_to_consume?: number
 }
 
 export interface ProcessedDocument {

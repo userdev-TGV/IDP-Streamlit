@@ -1,21 +1,28 @@
 import { useMutation } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { downloadCsv, downloadJson, processDocument } from '../../api/contracts'
 import { useSession } from '../../context/SessionContext'
 import { useAuth } from '../../context/AuthContext'
 
 export function ExtractionPage() {
   const { setSession, reset } = useSession()
-  const { consume } = useAuth()
+  const { consume, tokensRemaining } = useAuth()
   const [file, setFile] = useState<File | null>(null)
   const [customPrompt, setCustomPrompt] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const openFilePicker = () => fileInputRef.current?.click()
 
   const mutation = useMutation({
     mutationFn: async () => {
       if (!file) throw new Error('Selecciona un archivo')
-      await consume('extract', 1)
-      return processDocument(file, { language: undefined, customPrompt: customPrompt || undefined })
+      if (tokensRemaining <= 0) throw new Error('Sin creditos disponibles')
+      const result = await processDocument(file, { language: undefined, customPrompt: customPrompt || undefined })
+      const backendTokens = Number(result.metrics?.tokens_to_consume || 0)
+      const usageTokens = Math.ceil(Number(result.metrics?.openai_tokens || 0) / 1000)
+      const tokensToConsume = Math.max(1, backendTokens || usageTokens || 1)
+      await consume('extract', tokensToConsume)
+      return result
     },
     onSuccess: (data) => {
       setSession({
@@ -39,23 +46,90 @@ export function ExtractionPage() {
 
   return (
     <div className="container fluid">
-      <div className="card">
-        <div className="chip">OCR + OpenAI</div>
-        <h2>Extracci?n Est?ndar</h2>
+      <div className="card" id="idp-upload" data-tour-target="idp-upload">
+        <h2>Extraccion Manual</h2>
         <p className="muted">
-          Sube tu contrato y (opcional) sobrescribe el prompt. OpenAI detecta el idioma autom?ticamente. El resultado se
-          mostrar? abajo en JSON y podr?s reutilizarlo en las otras secciones.
+          Sube tu contrato y (opcional) sobrescribe el prompt. La inteligencia artificial detectará el idioma automáticamente. El resultado se
+          mostrará abajo en JSON y podrás reutilizarlo en las otras secciones.
         </p>
         <form className="grid two-col" onSubmit={handleSubmit}>
-          <label className="card">
-            <span>Archivo PDF o Imagen</span>
+          <div className="card upload-card">
+            <div className="upload-head">
+              <div>
+                <p className="eyebrow">Carga de archivo</p>
+                <h4>PDF, PNG o JPG</h4>
+              </div>
+            </div>
+
+            <div
+              className="upload-zone"
+              role="button"
+              tabIndex={0}
+              onClick={openFilePicker}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  openFilePicker()
+                }
+              }}
+            >
+              <div className="upload-zone-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" role="presentation">
+                  <path
+                    d="M20 40c-2.21 0-4 1.79-4 4v6c0 2.21 1.79 4 4 4h24c2.21 0 4-1.79 4-4v-6c0-2.21-1.79-4-4-4"
+                    fill="none"
+                    stroke="#0f172a"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M32 44V16"
+                    fill="none"
+                    stroke="#0f172a"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M22 26l10-10 10 10"
+                    fill="none"
+                    stroke="#0f172a"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              <div className="upload-zone-text">
+                <strong>Arrastra y suelta el archivo</strong>
+                <span className="muted">o haz clic para buscarlo</span>
+              </div>
+            </div>
+
+            <div className="upload-status">
+              <div className="upload-file-pill">
+                {file ? (
+                  <>
+                    <strong>Seleccionado:</strong> {file.name}
+                  </>
+                ) : (
+                  'Ningun archivo seleccionado'
+                )}
+              </div>
+              <button type="button" className="btn btn-ghost" onClick={openFilePicker}>
+                Elegir archivo
+              </button>
+            </div>
             <input
+              ref={fileInputRef}
+              id="idp-file-input"
               type="file"
+              className="upload-input"
               accept=".pdf,.png,.jpg,.jpeg"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
             />
-            {file && <p className="muted">Seleccionado: {file.name}</p>}
-          </label>
+          </div>
           <div className="card">
             <label>
               Prompt personalizado (opcional)
@@ -112,11 +186,11 @@ function ExtractionResultsPanel() {
   const contracts = Array.isArray(openaiResponse.contracts) ? openaiResponse.contracts : []
 
   return (
-    <div className="cards-grid" style={{ marginTop: '1.5rem' }}>
+    <div className="cards-grid" style={{ marginTop: '1.5rem' }} id="idp-results-main" data-tour-target="idp-results-main">
       <div className="card" style={{ gridColumn: 'span 2' }}>
         <div className="chip">Resultados</div>
         <h3>Resumen del contrato</h3>
-        <p className="muted">Vista amigable del JSON extra?do. Copia, descarga o usa el contexto para chatear directamente.</p>
+        <p className="muted">Vista amigable del JSON extraído. Copia, descarga o usa el contexto para chatear directamente.</p>
 
         {contracts.length ? (
           <div className="cards-grid">
@@ -124,7 +198,7 @@ function ExtractionResultsPanel() {
               const payments = Array.isArray(contract['Payment Values']) ? contract['Payment Values'] : []
               return (
                 <div className="card" key={idx}>
-                  <div className="chip">Contrato #{idx + 1}</div>
+                  <div className="chip">Valor de pago #{idx + 1}</div>
                   <h4>{contract['Contract'] || 'Contrato sin nombre'}</h4>
                   <p className="muted">{contract['Customer']}</p>
                   <ul style={{ paddingLeft: '1.1rem', color: '#4b5563', lineHeight: 1.6 }}>
@@ -132,10 +206,10 @@ function ExtractionResultsPanel() {
                       <strong>Tipo:</strong> {contract['Contract Type'] || 'N/D'}
                     </li>
                     <li>
-                      <strong>Regi?n:</strong> {contract['Region'] || 'N/D'}
+                      <strong>Región:</strong> {contract['Region'] || 'N/D'}
                     </li>
                     <li>
-                      <strong>Vigencia:</strong> {contract['Effective Date'] || 'N/D'} ? {contract['Expiration Date'] || 'N/D'}
+                      <strong>Vigencia:</strong> {contract['Effective Date'] || 'N/D'} — {contract['Expiration Date'] || 'N/D'}
                     </li>
                     <li>
                       <strong>Pago:</strong> {contract['Payment Type'] || 'N/D'} ({contract['Payment Value'] || 'N/D'})
@@ -147,7 +221,7 @@ function ExtractionResultsPanel() {
 
                   {payments.length > 0 && (
                     <div style={{ marginTop: '0.5rem' }}>
-                      <strong>Payment Values:</strong>
+                      <strong>Valores de pago:</strong>
                       <ul style={{ paddingLeft: '1.1rem', color: '#4b5563', lineHeight: 1.6 }}>
                         {payments.map((p: any, i: number) => {
                           const label = p?.name || `Payment #${i + 1}`
@@ -164,7 +238,7 @@ function ExtractionResultsPanel() {
 
                   {contract['Promo Tactic'] && (
                     <>
-                      <strong>T?cticas:</strong>
+                      <strong>Tácticas:</strong>
                       <ul style={{ paddingLeft: '1.1rem', color: '#4b5563' }}>
                         {contract['Promo Tactic']?.map((t: string, i: number) => (
                           <li key={i}>{t}</li>
@@ -202,7 +276,7 @@ function ExtractionResultsPanel() {
 
       <div className="card" style={{ gridColumn: 'span 2' }}>
         <div className="chip">JSON</div>
-        <h4>JSON extra?do</h4>
+        <h4>JSON extraído</h4>
         <pre
           style={{
             background: '#f8fafc',

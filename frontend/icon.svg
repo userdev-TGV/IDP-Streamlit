@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .cls-1 { fill: #e0e0e0; }
+      .cls-2 { fill: #c0c0c0; }
+      .cls-3 { fill: #5dade2; }
+      .cls-4 { fill: #ec7063; }
+      .cls-5 { fill: none; stroke: #000; stroke-width: 20; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+  
+  <!-- Background documents -->
+  <rect class="cls-1" x="150" y="120" width="280" height="350" rx="20" ry="20"/>
+  <path class="cls-1" d="M380,120 L380,170 L430,170 L430,120 Z"/>
+  <polygon class="cls-2" points="380,120 430,170 380,170"/>
+  
+  <rect class="cls-1" x="100" y="80" width="280" height="350" rx="20" ry="20"/>
+  <path class="cls-1" d="M330,80 L330,130 L380,130 L380,80 Z"/>
+  <polygon class="cls-2" points="330,80 380,130 330,130"/>
+  
+  <!-- Front document -->
+  <rect class="cls-1" x="50" y="40" width="280" height="350" rx="20" ry="20"/>
+  <path class="cls-1" d="M280,40 L280,90 L330,90 L330,40 Z"/>
+  <polygon class="cls-2" points="280,40 330,90 280,90"/>
+  
+  <!-- Blue arrow -->
+  <path class="cls-3" d="M180,240 L180,150 L220,150 L220,240 L260,240 L200,310 L140,240 Z"/>
+  
+  <!-- Red box -->
+  <rect class="cls-4" x="150" y="320" width="100" height="40" rx="5" ry="5"/>
+  
+  <!-- Outlines -->
+  <rect class="cls-5" x="50" y="40" width="280" height="350" rx="20" ry="20"/>
+  <polyline class="cls-5" points="280,40 280,90 330,90"/>
+  <path class="cls-5" d="M180,240 L180,150 L220,150 L220,240 L260,240 L200,310 L140,240 Z"/>
+  <rect class="cls-5" x="150" y="320" width="100" height="40" rx="5" ry="5"/>
+</svg>

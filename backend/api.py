@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from . import services
+from pydantic import BaseModel
 
 app = FastAPI(title="IDP Streamlit Migration API", version="1.0.0")
 
@@ -24,11 +25,20 @@ async def _read_uploaded_file(upload_file: UploadFile) -> bytes:
 
 
 @app.get("/api/status")
+@app.get("/status", include_in_schema=False)
 async def status() -> Dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/api/warmup")
+@app.get("/warmup", include_in_schema=False)
+async def warmup() -> Dict[str, Any]:
+    """Endpoint para despertar las bases de datos proactivamente."""
+    return services.warmup_databases()
+
+
 @app.post("/api/process")
+@app.post("/process", include_in_schema=False)
 async def process_document(
     file: UploadFile = File(...),
     custom_prompt: Optional[str] = Form(default=None),
@@ -57,6 +67,7 @@ async def process_document(
 
 
 @app.post("/api/chat/document")
+@app.post("/chat/document", include_in_schema=False)
 async def chat_document(payload: Dict[str, Any]) -> Dict[str, str]:
     extracted_text = payload.get("extracted_text")
     question = payload.get("question")
@@ -72,24 +83,73 @@ async def chat_document(payload: Dict[str, Any]) -> Dict[str, str]:
 
 
 @app.post("/api/chat/database")
-async def chat_database(
-    question: str = Form(...),
-    file: Optional[UploadFile] = File(default=None),
-) -> Dict[str, str]:
-    if not file:
-        raise HTTPException(status_code=400, detail="A CSV or Excel file is required")
-
-    dataframe = services.dataframe_from_file(file)
+@app.post("/chat/database", include_in_schema=False)
+async def chat_database(payload: Dict[str, Any]) -> Dict[str, Any]:
+    question = payload.get("question")
+    if not question:
+        raise HTTPException(status_code=400, detail="question is required")
 
     try:
-        answer = services.chat_with_database(dataframe, question)
+        result = services.chat_with_database_sql(question)
+    except HTTPException:
+        raise
     except Exception as exc:  # pragma: no cover - external service
         raise HTTPException(status_code=500, detail=str(exc))
 
-    return {"answer": answer, "preview": dataframe.head(5).to_dict(orient="records")}
+    return result
+
+
+@app.post("/api/auth/login")
+@app.post("/auth/login", include_in_schema=False)
+async def auth_login(payload: Dict[str, Any]) -> Dict[str, Any]:
+    access_id = payload.get("access_id")
+    poc_id = payload.get("poc_id", 1)
+    if not access_id:
+        raise HTTPException(status_code=400, detail="access_id is required")
+    return services.validate_login(access_id, poc_id)
+
+
+@app.post("/api/auth/consume")
+@app.post("/auth/consume", include_in_schema=False)
+async def auth_consume(payload: Dict[str, Any]) -> Dict[str, Any]:
+    access_id = payload.get("access_id")
+    poc_id = payload.get("poc_id", 1)
+    tokens = payload.get("tokens", 1)
+    if not access_id:
+        raise HTTPException(status_code=400, detail="access_id is required")
+    return services.consume_tokens(access_id, poc_id, tokens)
+
+
+class TokenRequest(BaseModel):
+    name: str
+    email: str
+
+class SpecialistRequest(BaseModel):
+    name: str
+    email: str
+    company: str | None = None
+    project: str | None = None
+
+
+@app.post("/api/tokens/request")
+@app.post("/tokens/request", include_in_schema=False)
+async def request_tokens(payload: TokenRequest) -> Dict[str, str]:
+    if not payload.name or not payload.email:
+        raise HTTPException(status_code=400, detail="name y email son obligatorios")
+    services.send_token_request_email(payload.name, payload.email)
+    return {"status": "ok", "message": "Solicitud enviada"}
+
+@app.post("/api/contact/specialist")
+@app.post("/contact/specialist", include_in_schema=False)
+async def request_specialist(payload: SpecialistRequest) -> Dict[str, str]:
+    if not payload.name or not payload.email:
+        raise HTTPException(status_code=400, detail="name y email son obligatorios")
+    services.send_specialist_request_email(payload.name, payload.email, payload.company or "", payload.project or "")
+    return {"status": "ok", "message": "Solicitud enviada"}
 
 
 @app.post("/api/charts")
+@app.post("/charts", include_in_schema=False)
 async def generate_chart(payload: Dict[str, str]) -> Dict[str, Any]:
     prompt = payload.get("prompt", "")
     if not prompt:
@@ -105,6 +165,7 @@ async def generate_chart(payload: Dict[str, str]) -> Dict[str, Any]:
 
 
 @app.post("/api/upload/db")
+@app.post("/upload/db", include_in_schema=False)
 async def upload_db_records(payload: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Any]:
     records = payload.get("records")
     if not records:
@@ -114,6 +175,7 @@ async def upload_db_records(payload: Dict[str, List[Dict[str, Any]]]) -> Dict[st
 
 
 @app.post("/api/download/json")
+@app.post("/download/json", include_in_schema=False)
 async def download_json(payload: Dict[str, Any]) -> StreamingResponse:
     data = payload.get("data")
     if data is None:
@@ -128,6 +190,7 @@ async def download_json(payload: Dict[str, Any]) -> StreamingResponse:
 
 
 @app.post("/api/download/csv")
+@app.post("/download/csv", include_in_schema=False)
 async def download_csv(payload: Dict[str, Any]) -> StreamingResponse:
     results = payload.get("results")
     if results is None:

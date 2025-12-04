@@ -56,11 +56,33 @@ export function ResultsPage() {
             </div>
             <div className="card" style={{ gridColumn: '1 / -1' }}>
               <h3>JSON bruto</h3>
-              <pre style={{ maxHeight: 400, overflow: 'auto' }}>{JSON.stringify(openaiResponse, null, 2)}</pre>
+              <pre
+                style={{
+                  maxHeight: 400,
+                  overflow: 'auto',
+                  background: '#f8fafc',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: 12,
+                  padding: '1rem',
+                }}
+              >
+                {JSON.stringify(openaiResponse, null, 2)}
+              </pre>
             </div>
             <div className="card" style={{ gridColumn: '1 / -1' }}>
               <h3>Texto extraído (para chat)</h3>
-              <pre style={{ maxHeight: 200, overflow: 'auto' }}>{JSON.stringify(extractedText, null, 2)}</pre>
+              <pre
+                style={{
+                  maxHeight: 200,
+                  overflow: 'auto',
+                  background: '#f8fafc',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: 12,
+                  padding: '1rem',
+                }}
+              >
+                {JSON.stringify(extractedText, null, 2)}
+              </pre>
             </div>
           </div>
         )}
